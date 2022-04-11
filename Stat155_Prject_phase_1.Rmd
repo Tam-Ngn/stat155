@@ -1,0 +1,263 @@
+---
+title: "STAT 155 mini-project: Phase 1"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+
+# Group members
+
+List the first and last name of each member in your group.
+
+Long Truong
+\
+Linh Dang
+\
+Tam Nguyen
+\
+Siem Tsegay
+
+\
+\
+
+
+
+
+
+# Data
+
+What data set will you use for the mini-project? If you are using a data set that wasn't included in the list, be sure that this has been approved by the instructor, and provide a citation and description.
+
+
+We will be using The Spotify Hit Predictor Dataset (1960-2019)
+\
+Link: [dataset](https://www.kaggle.com/datasets/theoverman/the-spotify-hit-predictor-dataset)
+\
+This data set has the following variables: 
+\
+Track: name of song
+\
+Artist: name(s) of performer(s)
+\
+Danceability, valance, acousticness, etc: chacracterics of song
+\
+target: 1 denotes the song is a hit, 0 says it's a flop.
+
+
+
+
+
+\
+\
+
+
+
+# Research questions
+
+Name at least two research questions that you plan to answer using this data. These can be related!
+
+- Question 1: Which predictors are strongly associated with whether or not a song is a  hit or a flop?
+
+
+- Question 2:For the top 20 artists of the 2010s, how did their songs fit the predictions? 
+
+
+
+\
+\
+
+
+# Getting started with the data
+
+Using the chunks below, in this section you will:
+
+- Load the data in RStudio.
+- Check its dimensions (how many rows and variables are there?).
+- Create 3--5 data visualizations that provide some insight into the research questions you outlined above. **Discuss** each visualization (2-4 sentences for each suffices).
+
+
+## Loading the data & checking the dimensions
+
+```{r libraries}
+library(ggplot2)
+library(dplyr)
+library(readr)
+```
+
+
+
+```{r}
+# Load the data
+top_songs <- read_csv("/Users/nguyenhoangtam/Desktop/Statistics/stat 155 project /dataset-of-10s.csv")
+# Calculate the dimensions
+dim(top_songs)
+
+```
+
+
+\
+
+
+## Plot 1
+
+On average, hit songs had a higher danceability median than flop songs
+
+
+```{r}
+# Plot 1
+ggplot(top_songs, 
+       aes(x= as.factor(target), 
+           y= danceability, fill = as.factor(target))
+       ) + 
+  geom_boxplot()+
+  labs(title = "Hit/Flop Songs and Their Danceability Medians ",
+       y = "",
+       x= "",
+       fill = "Bop (1) or flop (2):") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = "bottom"
+        )
+
+```
+
+
+
+\
+
+
+
+## Plot 2
+
+On average, hit songs had a higher valence median than flop songs
+
+```{r}
+# Plot 2
+ggplot(top_songs, 
+       aes(x= as.factor(target), 
+           y= valence, fill = as.factor(target))
+       ) + 
+  geom_boxplot()+
+  labs(title = "Hit/Flop Songs and Their Valence Medians ",
+       y = "",
+       x= "",
+       fill = "Bop (1) or flop (2):") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = "bottom"
+        )
+```
+
+
+
+
+\
+
+
+## Plot 3
+
+On average, all hit songs has a zero rating of instrumentalness whereas for flop songs, there are significant outliers with a median of 0.0385 (which might indicate a lot of flop songs did not have much instrumentalness either)
+
+
+```{r}
+
+top_songs %>%
+  group_by(target) %>% 
+  summarize(median(instrumentalness))
+
+
+# Plot 3
+ggplot(top_songs, 
+       aes(x= as.factor(target), 
+           y= instrumentalness, fill = as.factor(target))
+       ) + 
+  geom_boxplot()+
+  labs(title = "Hit/Flop Songs and Their Intrusmentalness Medians ",
+       y = "",
+       x= "",
+       fill = "Bop (1) or flop (2):") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = "bottom"
+        )
+
+```
+
+
+
+
+\
+
+
+## Plot 4 (if you have one)
+
+The danceability and valence variables look to be multicollinear
+
+
+```{r}
+# Plot 4
+top_songs %>% 
+  ggplot(aes(x = danceability, y = valence))+
+  geom_point()+
+  geom_smooth(method = "lm" )+
+  labs(title = "The relationship between danceability and valence "
+       ) +
+  theme(plot.title = element_text(hjust = 0.5)
+        )
+```
+
+
+
+
+\
+
+
+## Plot 5 (if you have one)
+
+Since there are no obvious patterns, the danceability and instrumentalness seem to be covariates. 
+
+```{r}
+# Plot 5
+top_songs %>% 
+  ggplot(aes(x = danceability, y = instrumentalness))+
+  geom_point()+
+  geom_smooth(method = "lm", se = TRUE )+
+  labs(title = "The relationship between danceability and valence "
+       ) +
+  theme(plot.title = element_text(hjust = 0.5)
+  )
+
+```
+
+
+
+
+
+
+\
+\
+
+
+
+# Collaboration
+
+Each *individual* group member must fill out this form which reflects upon their own contributions, and those of others, during Phase 1 of the project:
+
+https://forms.gle/NbGB9Ybnv4Uvujee8
+
+
+
+
+
+\
+\
+
+
+
+# OPTIONAL
+
+For phase 2 of the mini-project, you will be asked to construct and discuss 2--4 models that inform your research questions. If you have additional capacity, I encourage your group to start thinking about this now. If you do, here are some tips. Don't start with the most complicated model you can think of. This is almost always wrong and tough to interpret if you don't build up to it. Instead, start with a simple model and build up from there. For each model:    
+
+- Specify your model assumptions (eg: is this "normal" or "logistic" regression?).
+- Discuss whether this is a "good" model (and include evidence that supports this discussion).
+- Write out your estimated model formula.
+- Interpret your model coefficients. If you have a lot of coefficients, focus on the main points of interest.
