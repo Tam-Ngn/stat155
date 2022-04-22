@@ -329,7 +329,7 @@ library(regclass)</code></pre>
 ## all.correlations -&gt; all_correlations, cor.demo -&gt; cor_demo, etc.</code></pre>
 <pre class="r"><code>library(readr)</code></pre>
 <pre class="r"><code># Load the data
-top_songs &lt;- read_csv(&quot;/Users/nguyenhoangtam/Desktop/Statistics/stat155/dataset-of-10s.csv&quot;)</code></pre>
+top_songs &lt;- read_csv(&quot;https://raw.githubusercontent.com/fortyTwo102/The-Spotify-Hit-Predictor-Dataset/master/dataset-of-10s.csv&quot;)</code></pre>
 <pre><code>## Rows: 6398 Columns: 19
 ## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
@@ -502,11 +502,11 @@ top_songs &lt;-
 (1997 +2213)/6398</code></pre>
 <pre><code>## [1] 0.6580181</code></pre>
 <pre class="r"><code>#Sensitivity: 
-1997/3199</code></pre>
-<pre><code>## [1] 0.6242576</code></pre>
-<pre class="r"><code>#Specificity:
 2213/3199</code></pre>
 <pre><code>## [1] 0.6917787</code></pre>
+<pre class="r"><code>#Specificity:
+1997/3199</code></pre>
+<pre><code>## [1] 0.6242576</code></pre>
 <p>This is not a good model. To be specific, it is an unecessary model. When I built a model with danceability as the lone predictor and used a confusion matrix, I got roughly a 66% on accuracy. This did not change significantly when I added valence to the model, giving me a 66% result on accuracy when I rounded .</p>
 <p><br />
 </p>
@@ -550,11 +550,11 @@ This is a logistic regression because the dependent variable is binary.</p>
 (1998+2915)/6398</code></pre>
 <pre><code>## [1] 0.7678962</code></pre>
 <pre class="r"><code>#Sensitivity: 
-1998/3199</code></pre>
-<pre><code>## [1] 0.6245702</code></pre>
-<pre class="r"><code>#Specificity:
 2915/3199</code></pre>
 <pre><code>## [1] 0.9112223</code></pre>
+<pre class="r"><code>#Specificity:
+1998/3199</code></pre>
+<pre><code>## [1] 0.6245702</code></pre>
 <p>Model 2 has the overall accuracy of 76.79%, which is higher than model 1<br />
 <br />
 We noticed that danceability and valance are multicollinear and the model of danceability and valance together did not increase in overall accuracy. Therefore, we are building a new model, now including instrumentalness, to see if there is any improvement. For models 3 and 4, we will continue to add more variables to try to increase the accuracy of the model.<br />

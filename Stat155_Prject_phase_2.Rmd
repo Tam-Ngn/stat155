@@ -92,7 +92,7 @@ library(readr)
 
 ```{r}
 # Load the data
-top_songs <- read_csv("/Users/nguyenhoangtam/Desktop/Statistics/stat155/dataset-of-10s.csv")
+top_songs <- read_csv("https://raw.githubusercontent.com/fortyTwo102/The-Spotify-Hit-Predictor-Dataset/master/dataset-of-10s.csv")
 # Calculate the dimensions
 dim(top_songs)
 
@@ -315,9 +315,9 @@ confusion_matrix(spotify_model_1)
 #Overall accuracy:
 (1997 +2213)/6398
 #Sensitivity: 
-1997/3199
-#Specificity:
 2213/3199
+#Specificity:
+1997/3199
 ```
 
 This is not a good model. To be specific, it is an unecessary model. When I built a model with danceability as the lone predictor and used a confusion matrix, I got roughly a 66% on accuracy. This did not change significantly when I added valence to the model, giving me a 66% result on accuracy when I rounded . 
@@ -391,9 +391,10 @@ confusion_matrix(model_2)
 #Overall accuracy:
 (1998+2915)/6398
 #Sensitivity: 
-1998/3199
-#Specificity:
 2915/3199
+
+#Specificity:
+1998/3199
 
 ```
 
