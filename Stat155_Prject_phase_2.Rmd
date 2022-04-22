@@ -1,0 +1,606 @@
+---
+title: "STAT 155 mini-project: Phase 2"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+
+# Group members
+
+List the first and last name of each member in your group.
+
+Long Truong
+\
+Linh Dang
+\
+Tam Nguyen
+\
+Siem Tsegay
+
+\
+\
+
+
+
+
+
+# Data
+
+What data set will you use for the mini-project? If you are using a data set that wasn't included in the list, be sure that this has been approved by the instructor, and provide a citation and description.
+
+
+We will be using The Spotify Hit Predictor Dataset (1960-2019)
+\
+Link: [dataset](https://www.kaggle.com/datasets/theoverman/the-spotify-hit-predictor-dataset)
+\
+This data set has the following variables: 
+\
+Track: name of song
+\
+Artist: name(s) of performer(s)
+\
+Danceability, valance, acousticness, etc: chacracterics of song
+\
+target: 1 denotes the song is a hit, 0 says it's a flop.
+
+
+
+
+
+\
+\
+
+
+
+# Research questions
+
+Name at least two research questions that you plan to answer using this data. These can be related!
+
+- Question 1: Which predictors are strongly associated with whether or not a song is a  hit or a flop?
+
+
+- Question 2:For the top 20 artists of the 2010s, how did their songs fit the predictions? 
+
+
+
+\
+\
+
+
+# Getting started with the data
+
+Using the chunks below, in this section you will:
+
+- Load the data in RStudio.
+- Check its dimensions (how many rows and variables are there?).
+- Create 3--5 data visualizations that provide some insight into the research questions you outlined above. **Discuss** each visualization (2-4 sentences for each suffices).
+
+
+## Loading the data & checking the dimensions
+
+```{r libraries}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(regclass)
+library(readr)
+```
+
+
+
+```{r}
+# Load the data
+top_songs <- read_csv("/Users/nguyenhoangtam/Desktop/Statistics/stat155/dataset-of-10s.csv")
+# Calculate the dimensions
+dim(top_songs)
+
+```
+
+
+\
+
+
+## Plot 1
+
+On average, hit songs had a higher danceability median than flop songs
+
+
+```{r}
+# Plot 1
+ggplot(top_songs, 
+       aes(x= as.factor(target), 
+           y= danceability, fill = as.factor(target))
+       ) + 
+  geom_boxplot()+
+  labs(title = "Hit/Flop Songs and Their Danceability Medians ",
+       y = "",
+       x= "",
+       fill = "Bop (1) or flop (2):") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = "bottom"
+        )
+
+```
+
+
+
+\
+
+
+
+## Plot 2
+
+On average, hit songs had a higher valence median than flop songs
+
+```{r}
+# Plot 2
+ggplot(top_songs, 
+       aes(x= as.factor(target), 
+           y= valence, fill = as.factor(target))
+       ) + 
+  geom_boxplot()+
+  labs(title = "Hit/Flop Songs and Their Valence Medians ",
+       y = "",
+       x= "",
+       fill = "Bop (1) or flop (2):") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = "bottom"
+        )
+```
+
+
+
+
+\
+
+
+## Plot 3
+
+On average, all hit songs has a zero rating of instrumentalness whereas for flop songs, there are significant outliers with a median of 0.0385 (which might indicate a lot of flop songs did not have much instrumentalness either)
+
+
+```{r}
+
+top_songs %>%
+  group_by(target) %>% 
+  summarize(median(instrumentalness))
+
+
+# Plot 3
+ggplot(top_songs, 
+       aes(x= as.factor(target), 
+           y= instrumentalness, fill = as.factor(target))
+       ) + 
+  geom_boxplot()+
+  labs(title = "Hit/Flop Songs and Their Intrusmentalness Medians ",
+       y = "",
+       x= "",
+       fill = "Bop (1) or flop (2):") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = "bottom"
+        )
+
+```
+
+
+
+
+\
+
+
+## Plot 4 (if you have one)
+
+The danceability and valence variables look to be multicollinear
+
+
+```{r}
+# Plot 4
+top_songs %>% 
+  ggplot(aes(x = danceability, y = valence))+
+  geom_point()+
+  geom_smooth(method = "lm" )+
+  labs(title = "The relationship between danceability and valence "
+       ) +
+  theme(plot.title = element_text(hjust = 0.5)
+        )
+```
+
+
+
+
+\
+
+
+## Plot 5 (if you have one)
+
+Since there are no obvious patterns, the danceability and instrumentalness seem to be non-multicollinear covariates. 
+
+```{r}
+# Plot 5
+top_songs %>% 
+  ggplot(aes(x = danceability, y = instrumentalness))+
+  geom_point()+
+  geom_smooth(method = "lm", se = TRUE )+
+  labs(title = "The relationship between danceability and instrumentalness "
+       ) +
+  theme(plot.title = element_text(hjust = 0.5)
+  )
+```
+
+
+
+
+
+
+\
+\
+
+
+
+# Collaboration
+
+Each *individual* group member must fill out this form which reflects upon their own contributions, and those of others, during Phase 1 of the project:
+
+https://forms.gle/NbGB9Ybnv4Uvujee8
+
+
+
+
+
+\
+\
+
+
+
+# Models
+
+In the sections below, construct and discuss 2--4 models that inform your research questions. Don't start with the most complicated model you can think of. This is almost always wrong and tough to interpret if you don't build up to it. Instead, start with a simple model and build up from there. For each model, you will:   
+
+- Specify your model assumptions (eg: is this "normal" or "logistic" regression?).
+- Discuss whether this is a "good" model (and include evidence that supports this discussion).
+- Interpret your model coefficients. If you have a lot of coefficients, focus on the main points of interest.
+- RECOMMENDED but OPTIONAL: Do some inference. What do the confidence intervals and hypothesis tests allow you to conclude about the broader population of interest? (You'll need to do this for the final presentation, so should start now if you can.)
+
+
+\
+\
+
+```{r Mutate Data}
+# Mutate a column target_boolean to data set
+top_songs <- 
+  top_songs %>%
+    mutate(target_boolean = str_detect(target,"1"), collab = str_detect(artist,   ",|Featuring|&|With" )) %>% #detects a collaboration 
+   separate(artist,
+           into = c("artist1", "artist2", "artist3"),
+           sep = "(&|,|Featuring|/|With)+") %>% 
+  mutate(big_artist = str_detect(artist1, "Taylor Swift|Ariana Grande|The Weekend|Post Malone|Justin Bieber|One Direction|Rihanna|Adele|Bruno Mars|Drake|Katy Perry|Ed Sheeran|Nicki Minaj|Maroon 5|Cardi B|Lady Gaga|Imagine Dragons|Lil Wayne|Pitbull|Chris Brown")) #detects row entries that include the big artists of the 2010s. Link included below 
+```
+
+[Data source for the top 20 artist]((https://top40weekly.com/top-100-artists-of-the-10s/#artists-1-10))
+
+## Model 1
+
+**Construct and save your model using lm() or glm()**
+
+```{r}
+spotify_model_1 <- glm(target_boolean ~ danceability + valence, family = "binomial", data = top_songs)
+```
+
+
+\
+
+
+**Specify your model assumptions (eg: is this "normal" or "logistic" regression?)**
+
+This is logistic regression because the response variable is binary (hit or flop, 0 or 1)
+
+
+
+
+\
+
+**Discuss whether this is a "good" model (and include evidence that supports this discussion)**    
+
+
+```{r}
+confusion_matrix(spotify_model_1)
+
+```
+
+
+
+```{r}
+#Overall accuracy:
+(1997 +2213)/6398
+#Sensitivity: 
+1997/3199
+#Specificity:
+2213/3199
+```
+
+This is not a good model. To be specific, it is an unecessary model. When I built a model with danceability as the lone predictor and used a confusion matrix, I got roughly a 66% on accuracy. This did not change significantly when I added valence to the model, giving me a 66% result on accuracy when I rounded . 
+
+\
+
+
+**Report a model `summary()` table and interpret your model coefficients. If you have a lot of coefficients, focus on the main points of interest.**
+
+
+```{r}
+coef(summary(spotify_model_1))
+```
+\
+\
+Danceability: exp(4.5389625) = 93.59365
+\
+Valence: exp(0.1747156) = 1.190907
+\
+When controlling for valence, the odds of getting a hit song at any danceability level are 93.59365 of a song which has one more unit in danceability.
+\
+When controlling for danceability, the odds of getting a hit song at any valence level are 1.190907 of a song which has one more unit in valence.
+
+
+
+
+
+
+\
+
+
+**Optional but recommended: Check out and discussion some confidence intervals / hypothesis tests.**
+
+
+
+
+
+
+
+\
+\
+
+
+
+## Model 2
+
+
+\
+
+**Construct and save your model using lm() or glm()**
+```{r building model 2}
+model_2<- glm(target_boolean ~ instrumentalness + danceability, family = "binomial", data = top_songs)
+```
+
+**Specify your model assumptions (eg: is this "normal" or "logistic" regression?)**
+\
+This is a logistic regression because the dependent variable is binary.
+
+\
+
+**Discuss whether this is a "good" model (and include evidence that supports this discussion)**    
+
+```{r}
+confusion_matrix(model_2)
+```
+
+
+
+```{r}
+#Model 2
+#Overall accuracy:
+(1998+2915)/6398
+#Sensitivity: 
+1998/3199
+#Specificity:
+2915/3199
+
+```
+
+Model 2 has the overall accuracy of 76.79%, which is higher than model 1
+\
+\
+We noticed that danceability and valance are multicollinear and the model of danceability and valance together did not increase in overall accuracy. Therefore, we are building a new model, now including instrumentalness, to see if there is any improvement. For models 3 and 4, we will continue to add more variables to try to increase the accuracy of the model.
+\
+
+
+**Report a model `summary()` table and interpret your model coefficients. If you have a lot of coefficients, focus on the main points of interest.**
+
+```{r}
+coef(summary(model_2))
+```
+
+```{r}
+exp(-9.499304)
+exp(3.821468)
+```
+
+Controling for danceability variable, the odds of being a hit at a given instrumentalness unit are only approximately 7.490394e-05of a song which has one more unit in instrumentalness -> The more instrumentalness, the less likely a song will become a hit.
+
+
+
+
+\
+\
+
+
+## Model 3 (delete if you don't have a model 3)
+
+**Construct and save your model using lm() or glm()**
+
+```{r}
+#Adding whether or not a collab is important to increasing the success rate
+model_3 <- glm(target_boolean ~ collab + danceability + instrumentalness, family = "binomial", top_songs)
+```
+
+
+\
+
+
+**Specify your model assumptions (eg: is this "normal" or "logistic" regression?)**
+
+
+Logistic regression
+
+
+\
+
+**Discuss whether this is a "good" model (and include evidence that supports this discussion)**    
+\
+Since our data is not biased and the confusion matrix we build below gives good result, this is a "good" model.
+
+```{r}
+confusion_matrix(model_3)
+```
+
+```{r}
+# Accuracy
+(2246+2712) / 6398
+
+# Sensitivity
+2712 / 3199
+
+# Specificity
+(2246) /3199
+
+
+```
+
+
+
+
+
+\ 
+
+**Report a model `summary()` table and interpret your model coefficients. If you have a lot of coefficients, focus on the main points of interest.**
+
+
+```{r}
+coef(summary(model_3))
+```
+
+log(odds of success) = -1.600 + 2.74 collab_TRUE + 3.13 danceability - 8.913 instrumentalness \
+\
+Interpret the collab_TRUE coefficient: \
+Control for `danceability` and `instrumentalness`, the log(odds) for songs with collaboration is 2.74 more than songs without collaboration i.e the odds is 15.5 (= exp(2.74)) times as high (93.94% of becoming a hit).
+\
+\
+
+
+**Optional but recommended: Check out and discussion some confidence intervals / hypothesis tests.**
+
+\
+\
+For the 3 predictor coefficients, the four p-values are very low (definitely less than 0.05), so there might be associations between `target` (which is success of a song) and the predictors
+
+
+
+
+\
+\
+
+
+## Model 4 (delete if you don't have a model 4)
+
+**Construct and save your model using lm() or glm()**
+
+```{r model 4 with 4 predictors}
+#Now we are adding whether or not a song is performed by a big artist
+model_4 <- glm(target_boolean ~ big_artist + collab +  danceability + instrumentalness, family = "binomial", top_songs)
+```
+
+
+\
+
+
+**Specify your model assumptions (eg: is this "normal" or "logistic" regression?)**
+
+
+logistic model
+
+
+\
+
+**Discuss whether this is a "good" model (and include evidence that supports this discussion)**    
+
+We used a confusion matrix to measure the strength of the model
+
+```{r}
+confusion_matrix(model_4)
+```
+
+```{r}
+#Overall accuracy
+(2539 + 2410)/6398
+#sensitivity
+2539/3199
+#specificity
+2410/3199
+```
+
+With the overall accuracy of 77.52%, we would say the model does a fairly good job at predicting whether or not a song is going to be a hit when we take into account such variables as big_artist, collab, danceability and instrumentalness.
+
+However, the overall accuracy of the model drops slightly compared to model 3. Maybe the collab and big artist variables are multicollinear.
+
+\ 
+
+**Report a model `summary()` table and interpret your model coefficients. If you have a lot of coefficients, focus on the main points of interest.**
+
+
+
+```{r}
+coef(summary(model_4))
+```
+
+BigArtistTRUE coefficient 
+
+When controlling for collab, danceability and instrumentalness, if a song is by a big artist then it has 99.94% chance of becoming a hit. 
+\
+However, a more nuanced interpretation would be that it could be their fan base being huge so the song received more hype, not necessarily because of non fans also streaming the song.
+\
+After reviewing all the models, we also noticed that the coefficients of danceability and instrumentalness decreased as we kept adding predictors.
+\
+The model could be enhanced if there were a column that accounted for the longevity of a song on the chart.
+
+\
+
+
+**Optional but recommended: Check out and discussion some confidence intervals / hypothesis tests.**
+
+
+
+
+
+
+\
+\
+
+
+
+
+# Reflection
+
+Based on what you've done thus far, in ONE sentence each, summarize 2 key takeaways. (Or, what are 2 points that you'd want your audience to remember?) NOTE: The one-sentence limit reflects the importance of providing clear and concise takeaways.
+
+- Key takeaway 1: Our model became better as we added more relevant predictors.
+
+
+
+- Key takeaway 2: Look out for multicollinearity so we can keep the number of predictors small and the model simple.
+
+
+
+
+
+
+
+\
+\
+
+
+# Collaboration
+
+Each *individual* group member must fill out this form which reflects upon their own contributions, and those of others, during Phase 2 of the project:
+
+https://forms.gle/ENXMCeNVC1gCXBvr5
+
