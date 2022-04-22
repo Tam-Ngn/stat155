@@ -98,6 +98,17 @@ dim(top_songs)
 
 ```
 
+```{r Mutate Data}
+# Mutate a column target_boolean to data set
+top_songs <- 
+  top_songs %>%
+    mutate(target_boolean = str_detect(target,"1"), collab = str_detect(artist,   ",|Featuring|&|With" )) %>% #detects a collaboration 
+   separate(artist,
+           into = c("artist1", "artist2", "artist3"),
+           sep = "(&|,|Featuring|/|With)+") %>% 
+  mutate(big_artist = str_detect(artist1, "Taylor Swift|Ariana Grande|The Weekend|Post Malone|Justin Bieber|One Direction|Rihanna|Adele|Bruno Mars|Drake|Katy Perry|Ed Sheeran|Nicki Minaj|Maroon 5|Cardi B|Lady Gaga|Imagine Dragons|Lil Wayne|Pitbull|Chris Brown")) #detects row entries that include the big artists of the 2010s. Link included below 
+```
+
 
 \
 
@@ -124,7 +135,14 @@ ggplot(top_songs,
 
 ```
 
+The probability graph tells us that with more danceability factor in a song, the more successful that song is.
 
+```{r}
+# Probability graph for plot 1
+ggplot(top_songs, aes(x = danceability,  y= as.numeric(target_boolean))) + 
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
+  labs(y = "probability of success")
+```
 
 \
 
@@ -151,7 +169,13 @@ ggplot(top_songs,
 ```
 
 
-
+The probability graph tells us that for more valence factor included, the higher the chance of the song being successful. \
+```{r message=FALSE, warning=FALSE}
+# Probability graph for plot 2
+ggplot(top_songs, aes(x = valence, y = as.numeric(target_boolean))) + 
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
+  labs(y = "probability of success")
+```
 
 \
 
@@ -185,7 +209,14 @@ ggplot(top_songs,
 ```
 
 
-
+Here, the probability graph tells us that with more instrumentalness, the song would not likely to be successful. 
+Note that the closer the instrumentalness value is closer to 1.0, the greater likelihood the track contains no vocal content. So songs with vocal content is perhaps more favored in this year on Spotify.
+```{r}
+# Probability graph for plot 3
+ggplot(top_songs, aes(x = instrumentalness, y = as.numeric(target))) + 
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
+  labs(y = "probability of success")
+```
 
 \
 
@@ -267,16 +298,6 @@ In the sections below, construct and discuss 2--4 models that inform your resear
 \
 \
 
-```{r Mutate Data}
-# Mutate a column target_boolean to data set
-top_songs <- 
-  top_songs %>%
-    mutate(target_boolean = str_detect(target,"1"), collab = str_detect(artist,   ",|Featuring|&|With" )) %>% #detects a collaboration 
-   separate(artist,
-           into = c("artist1", "artist2", "artist3"),
-           sep = "(&|,|Featuring|/|With)+") %>% 
-  mutate(big_artist = str_detect(artist1, "Taylor Swift|Ariana Grande|The Weekend|Post Malone|Justin Bieber|One Direction|Rihanna|Adele|Bruno Mars|Drake|Katy Perry|Ed Sheeran|Nicki Minaj|Maroon 5|Cardi B|Lady Gaga|Imagine Dragons|Lil Wayne|Pitbull|Chris Brown")) #detects row entries that include the big artists of the 2010s. Link included below 
-```
 
 [Data source for the top 20 artist]((https://top40weekly.com/top-100-artists-of-the-10s/#artists-1-10))
 
