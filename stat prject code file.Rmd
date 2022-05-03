@@ -1,0 +1,84 @@
+---
+title: "STAT 155 mini-project: Reproduciable Codes"
+author: "Linh Dang, Long Truong, Tam Nguyen and Siem ?"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+    code_download: true
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE,warning = FALSE)
+```
+
+```{r libraries}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(regclass)
+library(readr)
+```
+
+
+```{r data download and manipulation}
+# Load the data
+top_songs <- read_csv("https://raw.githubusercontent.com/fortyTwo102/The-Spotify-Hit-Predictor-Dataset/master/dataset-of-10s.csv")
+#Wrangle data 
+top_songs <- 
+  top_songs %>%
+    mutate(target_boolean = str_detect(target,"1"), collab = str_detect(artist,   ",|Featuring|&|With" )) %>% #detects a collaboration 
+   separate(artist,
+           into = c("artist1", "artist2", "artist3"),
+           sep = "(&|,|Featuring|/|With| x | X )+") %>% 
+  mutate(big_artist = str_detect(artist1, "Taylor Swift|Ariana Grande|The Weeknd|Post Malone|Justin Bieber|One Direction|Rihanna|Adele|Bruno Mars|Drake|Katy Perry|Ed Sheeran|Nicki Minaj|Maroon 5|Cardi B|Lady Gaga|Imagine Dragons|Lil Wayne|Pitbull|Chris Brown"), artist1 = str_squish(artist1)) 
+```
+
+
+```{r top artists from data based on most number of songs}
+#Slide 3
+top_songs %>% 
+  filter(big_artist == "TRUE") %>% 
+  filter(!artist1 %in% c("Valance Drakes", "Justin Bieber + BloodPop")) %>% 
+  ggplot(aes(y = fct_reorder(artist1,artist1,length)))+
+  geom_bar(fill = "lightblue" )+
+  labs(title = "Top 20 Artists in 2010s Spotify",
+       y = "",
+       x = "Number of songs") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = "bottom",
+        panel.grid.major.y = element_blank(),
+          panel.grid.minor.y = element_blank())
+```
+
+
+```{r}
+#slide 4 
+
+# Left
+ggplot(top_songs, 
+       aes(x= target_boolean, 
+           y= danceability, fill = target_boolean)
+       ) + 
+  geom_boxplot()+
+  labs(title = "Hit/Flop Songs and Their Danceability Medians ",
+       y = "",
+       x= "",
+       fill = "Bop?: ") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = "bottom"
+        )
+
+# Right
+ggplot(top_songs, aes(x = danceability,  y= as.numeric(target_boolean))) + 
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
+  labs(title = "Danceability and the Probability of Success",
+    y = "probability of success")+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+ddf
