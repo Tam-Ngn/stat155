@@ -38,6 +38,13 @@ top_songs <-
 ```
 
 
+```{r}
+top_songs %>% 
+  select(track, artist1, instrumentalness, target_boolean, collab) %>% 
+  head()
+```
+
+
 ```{r slide 4}
 #Slide 3
 top_songs %>% 
@@ -181,4 +188,3 @@ predict(model_3,
 
 ```
 
-ddf
