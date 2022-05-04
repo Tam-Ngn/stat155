@@ -30,7 +30,7 @@ top_songs <- read_csv("https://raw.githubusercontent.com/fortyTwo102/The-Spotify
 #Wrangle data 
 top_songs <- 
   top_songs %>%
-    mutate(target_boolean = str_detect(target,"1"), collab = str_detect(artist,   ",|Featuring|&|With" )) %>% #detects a collaboration 
+    mutate(target_boolean = str_detect(target,"1"), collab = str_detect(artist,  ",|Featuring|&|With" )) %>% #detects a collaboration 
    separate(artist,
            into = c("artist1", "artist2", "artist3"),
            sep = "(&|,|Featuring|/|With| x | X )+") %>% 
@@ -38,7 +38,7 @@ top_songs <-
 ```
 
 
-```{r top artists from data based on most number of songs}
+```{r slide 4}
 #Slide 3
 top_songs %>% 
   filter(big_artist == "TRUE") %>% 
@@ -49,14 +49,12 @@ top_songs %>%
        y = "",
        x = "Number of songs") +
   theme(plot.title = element_text(hjust = 0.5),
-        legend.position = "bottom",
         panel.grid.major.y = element_blank(),
           panel.grid.minor.y = element_blank())
 ```
 
 
-```{r}
-#slide 4 
+```{r slide 5}
 
 # Left
 ggplot(top_songs, 
@@ -80,5 +78,107 @@ ggplot(top_songs, aes(x = danceability,  y= as.numeric(target_boolean))) +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
+
+```{r slide 6}
+#box plot
+ggplot(top_songs, 
+       aes(x= target_boolean, 
+           y= instrumentalness, fill = target_boolean)
+       ) + 
+  geom_boxplot()+
+  labs(title = "Hit/Flop Songs and Their Danceability Medians ",
+       y = "",
+       x= "",
+       fill = "Bop?: ") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = "bottom"
+        )
+
+#prob plot
+ggplot(top_songs, aes(x = instrumentalness,  y= as.numeric(target_boolean))) + 
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
+  labs(title = "Instrumentalness and the Probability of Success",
+    y = "probability of success")+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r slide 7}
+#box plot
+ggplot(top_songs,
+       aes(x= target_boolean,
+           y= danceability, 
+           fill = collab)) +
+  geom_boxplot() +
+  labs(title = "Hit/Flop Songs and Danceability/Collab predictors",
+       y = "Danceability",
+       x = "Hit or Flop",
+       fill = "Collab or not:") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = "right")
+
+#prob plot
+ggplot(top_songs, aes(x = danceability, y = as.numeric(target), color = collab)) +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
+  labs(y = "probability of success", x ="danceability")
+```
+
+
+```{r slide 8}
+#box plot
+ggplot(top_songs, 
+       aes(x= target_boolean, 
+           y= instrumentalness, fill = collab)
+       ) + 
+  geom_boxplot()+
+  labs(title = "Hit/Flop Songs with their instrumentalness and collaboration nature ",
+       y = "instrumentalness",
+       x= "Bop?: ",
+       fill = "Collab or not:") +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.position = "right"
+        )
+
+#prob graph
+ggplot(data = top_songs, aes(x = instrumentalness, color = collab, y = as.numeric(target_boolean))) +
+geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
+labs(y = "probability of success")
+```
+
+```{r slide 9 + 10}
+#build models
+model_1 <- glm(target_boolean ~ danceability , family = "binomial", top_songs)
+model_2 <- glm(target_boolean ~ danceability + instrumentalness, family = "binomial", top_songs)
+model_3 <- glm(target_boolean ~ collab + danceability + instrumentalness  , family = "binomial", top_songs)
+model_4 <- glm(target_boolean ~ big_artist + collab + danceability + instrumentalness, family = "binomial", top_songs)
+
+#confusion matrix for model 3
+confusion_matrix(model_3)
+```
+
+
+
+```{r slide 11}
+coef(summary(model_3))
+```
+
+```{r}
+exp(0.1*confint(model_3, level = .95))
+```
+
+
+```{r slide 13}
+#Select only the important columns
+top_songs_new <- 
+  top_songs %>% 
+  select(track, artist1, danceability, instrumentalness, collab, target_boolean)
+#Grab a row from new dataset from above
+top_songs_new[809,]
+#Use to model to predict
+predict(model_3, 
+        newdata = data.frame(danceability = 0.655,
+                             instrumentalness = 1.25e-06,
+                             collab = FALSE), type = "response")
+
+```
 
 ddf
